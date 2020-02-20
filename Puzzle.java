@@ -15,9 +15,9 @@ import java.util.*;
 
 public class Puzzle {
 
-    private byte[] data;
-    private byte sideLength;
-    public byte spaceLoc;
+    private int[] data;
+    private int sideLength;
+    private int spaceLoc;
     private LinkedList<Step> stepsFromOriginal;
 
     /**
@@ -42,85 +42,20 @@ public class Puzzle {
      * @param sideLength Length of the sides of the n x n square.
      * @param steps Steps taken from original to get to this point.
      */
-    public Puzzle(byte[] data, byte sideLength, LinkedList<Step> steps){
+    public Puzzle(int[] data, int sideLen, int spaceLoc, List<Step> steps){
         this.data = data;
-        this.sideLength = sideLength;
-        this.stepsFromOriginal = steps;
+        this.sideLength = sideLen;
+        this.stepsFromOriginal = (LinkedList<Step>) steps;
+        this.spaceLoc = spaceLoc;
     }
-
-    /**
-     * Gets the steps taken.
-     * @return Array of the steps taken to get to this puzzle state.
-     */
-    public Step[] getSteps(){
-        return stepsFromOriginal.toArray(new Step[stepsFromOriginal.size()]);
-    }
-
-    /**
-     * Gets the length of one side of the n x n square puzzle.
-     * @return length of one side.
-     */
-    public byte getSideLength(){
-        return this.sideLength;
-    }
-
-    /**
-     * Heuristic that returns the amount of tiles that are not in the
-     * position needed for a solution, excluding the empty number.
-     * @return Hamming distance for this puzzle configuration.
-     */
-    public int getHammingDistance(){
-
-        byte count = 0;
-
-        for(int i = 0; i < data.length; i++){
-
-            //If the number is 0, ignore.
-            if(data[i] == 0)
-                continue;
-            
-            //If the number is where it should be, add one to the count.
-            if(data[i] == i)
-                count++;
-        }
-
-        return count;
-    }
-
-    /**
-     * Heuristic that determines the distance a number in the puzzle is from
-     * where it should be for a solution, excluding the empty number.
-     * @return Manhattan distance for this puzzle configuration.
-     */
-    public int getManhattanDistance(){
-        byte count = 0;
-
-        for(int i = 0; i < data.length; i++){
-
-            //If the number is zero, ignore it.
-            if(data[i] == 0)
-                continue;
-
-            //If the number is not in the correct position
-            if(data[i] != i){
-                //Calculate the distance to the correct position
-                //and add it to the running total.
-                int delta = Math.abs(i - data[i]);
-                count += delta % sideLength + delta / sideLength;
-            }
-        }
-
-        return count;
-    }
-
 
     /**
      * Validates the data from the String and creates the data array.
      * @param str String with input to check.
-     * @return byte array with the data.
+     * @return int array with the data.
      * @throws IllegalArgumentException if the String isn't valid.
      */
-    private byte[] insertData(String str) throws IllegalArgumentException {
+    private int[] insertData(String str) throws IllegalArgumentException {
 
         //Get rid of whitespace and replace with underscores.
         str = str.trim().replaceAll("\\s+", "_");
@@ -129,17 +64,17 @@ public class Puzzle {
         String[] temp = str.split("_");
 
         //Create a temp array.
-        byte[] arr = new byte[temp.length];
+        int[] arr = new int[temp.length];
         
         for(int i = 0; i < arr.length; i++){
             try{
                 //Try to convert the string to a number.
-                arr[i] = Byte.valueOf(temp[i]);
+                arr[i] = Integer.valueOf(temp[i]);
 
                 //If the number currently added is 0, set the location
                 //For the empty number.
                 if(arr[i] == 0)
-                    this.spaceLoc = (byte) i;
+                    this.spaceLoc = (int) i;
 
             }catch(NumberFormatException e){
                 //If the number fails to convert, throw an exception.
@@ -193,14 +128,14 @@ public class Puzzle {
      * @param num number to find the root for.
      * @return root of num. -1 if num is not a perfect square.
      */
-    private byte perfectSquare(int num){
+    private int perfectSquare(int num){
 
         //if the number we are multiplying is greater than the
         //number / 2, then it is invalid.
-        byte end = (byte)(num / 2);
+        int end = (int)(num / 2);
 
 
-        for(byte i = 1; i < end; i++){
+        for(int i = 1; i < end; i++){
             //Multiply this number and check if it is the num provided.
             int square = i*i;
             if(square == num)
@@ -275,7 +210,7 @@ public class Puzzle {
     public Puzzle move(Step step){
 
         //Copy this puzzle data to a new array for the new puzzle
-        byte[] temp = Arrays.copyOf(data, data.length);
+        int[] temp = Arrays.copyOf(data, data.length);
 
         //Based on the movement taken, update the new puzzle data.
         switch(step){
@@ -294,13 +229,13 @@ public class Puzzle {
         };
 
         //Copy the steps taken to get to this puzzle for the new puzzle.
-        LinkedList<Step> newSteps = (LinkedList) stepsFromOriginal.clone();
+        LinkedList<Step> newStep = (LinkedList<Step>) stepsFromOriginal.clone();
 
         //Add the move that was just performed.
-        newSteps.add(step);
+        newStep.add(step);
 
         //Create and return the new puzzle object.
-        return new Puzzle(temp, sideLength, newSteps);
+        return new Puzzle(temp, sideLength, spaceLoc, newStep);
     }
 
     /**
@@ -309,8 +244,8 @@ public class Puzzle {
      * @param a first index to have the data swapped.
      * @param b seocnd index to have the data swapped.
      */
-    private void swap(byte[] arr, int a, int b){
-        byte temp = arr[a];
+    private void swap(int[] arr, int a, int b){
+        int temp = arr[a];
         arr[a] = arr[b];
         arr[b] = temp;
     }
@@ -329,6 +264,141 @@ public class Puzzle {
         }
 
         //Goal state found, return true.
+        return true;
+    }
+
+    /**
+     * Heuristic that returns the amount of tiles that are not in the
+     * position needed for a solution, excluding the empty number.
+     * @return Hamming distance for this puzzle configuration.
+     */
+    public int getHammingDistance(){
+
+        int count = 0;
+
+        for(int i = 0; i < data.length; i++){
+
+            //If the number is 0, ignore.
+            if(data[i] == 0)
+                continue;
+            
+            //If the number is where it should be, add one to the count.
+            if(data[i] != i)
+                count++;
+        }
+
+        return count;
+    }
+
+    /**
+     * Heuristic that determines the distance a number in the puzzle is from
+     * where it should be for a solution, excluding the empty number.
+     * @return Manhattan distance for this puzzle configuration.
+     */
+    public int getManhattanDistance(){
+        int count = 0;
+
+        for(int i = 0; i < data.length; i++){
+
+            //If the number is zero, ignore it.
+            if(data[i] == 0)
+                continue;
+
+            //If the number is not in the correct position
+            if(data[i] != i){
+                //Calculate the distance to the correct position
+                //and add it to the running total.
+                int delta = Math.abs(i - data[i]);
+                count += delta % sideLength + delta / sideLength;
+            }
+        }
+
+        return count;
+    }
+
+    /**
+     * Gets the steps taken.
+     * @return Array of the steps taken to get to this puzzle state.
+     */
+    public Step[] getSteps(){
+        return stepsFromOriginal.toArray(new Step[stepsFromOriginal.size()]);
+    }
+
+    /**
+     * Gets the length of one side of the n x n square puzzle.
+     * @return length of one side.
+     */
+    public int getSideLength(){
+        return this.sideLength;
+    }
+
+    /**
+     * Gets the heuristic value based on the specified heuristic calculation.
+     * @param heuristic Heuristic calculation to be used.
+     * @return Heuristic value
+     */
+    public int getHeuristic(Heuristic heuristic){
+        switch(heuristic){
+            case HAMMING:
+                return this.getHammingDistance();
+            case MANHATTAN:
+                return this.getManhattanDistance();
+            default:
+                return 1;
+        }
+    }
+
+    /**
+     * Gets the amount of steps taken from the original puzzle to
+     * get to this puzzle configuration.
+     * @return Step count
+     */
+    public int getStepCount(){
+        return this.stepsFromOriginal.size();
+    }
+
+        /**
+     * Gets the data for this puzzle.
+     * @return number data.
+     */
+    protected int[] getData(){
+        return this.data;
+    }
+
+    /**
+     * Gets the estimated cost based on the specified heuristic.
+     * @param heuristic Heuristic to use
+     * @return Estimated cost
+     */
+    public int getEstimatedCost(Heuristic heuristic){
+        return this.getHeuristic(heuristic) + this.getStepCount();
+    }
+
+    /**
+     * Checks if two puzzles are equal by checking their number data.
+     * @param other The other puzzle to compare to
+     * @return True if equal, false otherwise.
+     */
+    @Override
+    public boolean equals(Object other){
+
+        //Check if the other object is a puzzle. If not, return false.
+        if(other instanceof Puzzle){
+
+            //Get the data for the other puzzle.
+            int[] otherData = ((Puzzle) other).getData();
+
+            //Loop through the data.
+            for(int i = 0; i < data.length && i < otherData.length; i++){
+                
+                //If a mismatch is found, they are not equal.
+                if(data[i] != otherData[i])
+                    return false;
+            }
+            
+        }else return false;
+
+        //No mismatches found, puzzles are equal.
         return true;
     }
 

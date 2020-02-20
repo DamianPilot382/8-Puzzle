@@ -1,3 +1,3 @@
 public enum Heuristic {
-    NONE, MANHATTAN, HAMMING;
+    HAMMING, MANHATTAN, NONE;
 }

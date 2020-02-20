@@ -17,15 +17,27 @@ public class Util{
 
     public static Step[] search(Puzzle puzzle, boolean isTree, Heuristic heur){
 
-        int pathCost = 0;
+        PriorityQueue<Puzzle> frontier = new PriorityQueue<>
+        (new Comparator<Puzzle>() {
+            public int compare(Puzzle a, Puzzle b){
+                System.out.println("A: " + a.getEstimatedCost(heur));
+                System.out.println(a);
 
-        PriorityQueue<Puzzle> frontier = new PriorityQueue<>();
+                System.out.println("B: " + b.getEstimatedCost(heur));
+                System.out.println(b);
+
+                return a.getEstimatedCost(heur) - b.getEstimatedCost(heur);
+            }
+        });
 
         frontier.add(puzzle);
 
         HashSet<Puzzle> explored = new HashSet<>();
 
-        while(true){
+        int count = 1000;
+
+        while(count-- > 0){
+            
             if(frontier.isEmpty()) return null; //FAILURE
 
             Puzzle node = frontier.poll();
@@ -38,11 +50,17 @@ public class Util{
             Step[] steps = node.getPossibleSteps();
 
             for(Step step : steps){
+
                 Puzzle child = node.move(step);
 
-                if(!explored.contains(child) && !frontier.contains(child))
+
+                //System.out.println(count);
+
+                //System.out.println(child);
+
+                if(!(explored.contains(child)))
                     frontier.add(child);
-                
+
                 //TODO
                 //else if child is in frontier with higher cost
                     //replace that frontier node with child
@@ -50,6 +68,8 @@ public class Util{
             }
 
         }
+
+        return null;
 
     }
 }

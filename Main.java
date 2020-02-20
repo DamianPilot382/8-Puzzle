@@ -15,13 +15,14 @@
 public class Main{
 
     public static void main(String[] args){
-        testSearch();
+        testText();
     }
 
     public static void testSearch(){
-        Puzzle puzzle = new Puzzle("1 2 3 4 0 5 6 7 8");
+        //Puzzle puzzle = new Puzzle("1 2 3 4 0 5 6 7 8");
+        Puzzle puzzle = new Puzzle("6 8 2 5 4 3 1 7 0");
 
-        Heuristic heuristic = Heuristic.NONE;
+        Heuristic heuristic = Heuristic.HAMMING;
 
         System.out.println(puzzle);
 
@@ -34,17 +35,30 @@ public class Main{
     }
 
     public static void testText(){
-        Puzzle puzzle = new Puzzle("1 2 3 4 0 5 6 7 8");
+        //Puzzle puzzle = new Puzzle("1 2 3 4 0 5 6 7 8");
 
-        System.out.println(puzzle.spaceLoc);
+        Puzzle puzzle = new Puzzle("6 8 2 5 4 3 1 7 0");
 
-        System.out.println(puzzle);
-        Step[] arr = puzzle.getPossibleSteps();
+        Heuristic heuristic = Heuristic.HAMMING;
 
-        for(Step i : arr){
-            System.out.println(i);
-            System.out.println(puzzle.move(i));
-        }
+        int count = 3;
+        Puzzle next = puzzle;
+
+        
+
+        // while(count-- > 0){
+
+        //     System.out.println(next.getEstimatedCost(heuristic));
+
+        //     System.out.println(next);
+        //     Step[] arr = next.getPossibleSteps();
+
+        //     for(Step i : arr){
+        //         System.out.println(i);
+        //         System.out.println(next.move(i));
+        //         next = next.move(i);
+        //     }
+        // }
     }
 
 }
