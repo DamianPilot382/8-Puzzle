@@ -19,6 +19,17 @@ public class Puzzle {
     private int sideLength;
     private int spaceLoc;
     private LinkedList<Step> stepsFromOriginal;
+    private int estimatedCost = -1;
+
+    /**
+     * Creates a puzzle with random numbers from a specified size.
+     * @param sideLength Length of one side of the n x n puzzle.
+     */
+    public Puzzle(int sideLength){
+        this.sideLength = sideLength;
+        this.stepsFromOriginal = new LinkedList<Step>();
+        data = randomShuffle();
+    }
 
     /**
      * Creates a puzzle from a String of numbers, separated by a space.
@@ -29,7 +40,7 @@ public class Puzzle {
         data = insertData(str);
 
         //If the numbers are not valid, throw an exception.
-        if(!checkNumbers() && !checkParity())
+        if(!checkNumbers() && !checkParity(data))
             throw new IllegalArgumentException();
 
         this.stepsFromOriginal = new LinkedList<>();
@@ -151,19 +162,19 @@ public class Puzzle {
      * Checks if the given data has an even number of inversions.
      * @return True if even inversions, false otherwise.
      */
-    private boolean checkParity(){
+    private boolean checkParity(int[] arr){
 
         //Boolean flipper for inversion. If the boolean is false,
         //then there is an unequal amount of inversions.
         boolean inverted = true;
 
         //Loop through the array
-        for(int i = 0; i < data.length; i++){
-            for(int j = i + 1; j < data.length; j++){
+        for(int i = 0; i < arr.length; i++){
+            for(int j = i + 1; j < arr.length; j++){
 
                 //If the data at data[j] position belongs below data[i]
                 //Flip the inverter.
-                if(data[i] > data[j])
+                if(arr[i] > arr[j])
                     inverted = !inverted;
             }
         }
@@ -207,26 +218,30 @@ public class Puzzle {
      * @param step Movement to perform.
      * @return a clone of this Puzzle object with the movement performed.
      */
+    @SuppressWarnings("unchecked")
     public Puzzle move(Step step){
 
         //Copy this puzzle data to a new array for the new puzzle
         int[] temp = Arrays.copyOf(data, data.length);
+        int newSpaceLoc = 0;
 
         //Based on the movement taken, update the new puzzle data.
         switch(step){
             case UP:
-                swap(temp, spaceLoc, spaceLoc - sideLength);
+                newSpaceLoc = spaceLoc - sideLength;
                 break;
             case DOWN:
-                swap(temp, spaceLoc, spaceLoc + sideLength);
+                newSpaceLoc = spaceLoc + sideLength;
                 break;
             case LEFT:
-                swap(temp, spaceLoc, spaceLoc - 1);
+                newSpaceLoc = spaceLoc - 1;
                 break;
             case RIGHT:
-                swap(temp, spaceLoc, spaceLoc + 1);
+                newSpaceLoc = spaceLoc + 1;
                 break;
         };
+
+        swap(temp, spaceLoc, newSpaceLoc);
 
         //Copy the steps taken to get to this puzzle for the new puzzle.
         LinkedList<Step> newStep = (LinkedList<Step>) stepsFromOriginal.clone();
@@ -235,7 +250,7 @@ public class Puzzle {
         newStep.add(step);
 
         //Create and return the new puzzle object.
-        return new Puzzle(temp, sideLength, spaceLoc, newStep);
+        return new Puzzle(temp, sideLength, newSpaceLoc, newStep);
     }
 
     /**
@@ -344,7 +359,7 @@ public class Puzzle {
             case MANHATTAN:
                 return this.getManhattanDistance();
             default:
-                return 1;
+                return 0;
         }
     }
 
@@ -357,7 +372,7 @@ public class Puzzle {
         return this.stepsFromOriginal.size();
     }
 
-        /**
+    /**
      * Gets the data for this puzzle.
      * @return number data.
      */
@@ -371,7 +386,9 @@ public class Puzzle {
      * @return Estimated cost
      */
     public int getEstimatedCost(Heuristic heuristic){
-        return this.getHeuristic(heuristic) + this.getStepCount();
+        if(estimatedCost < 0)
+            estimatedCost = this.getHeuristic(heuristic) + this.getStepCount();
+        return estimatedCost;
     }
 
     /**
@@ -382,14 +399,20 @@ public class Puzzle {
     @Override
     public boolean equals(Object other){
 
+        //System.out.println("EQUAL CHECKED");
+
         //Check if the other object is a puzzle. If not, return false.
         if(other instanceof Puzzle){
 
             //Get the data for the other puzzle.
             int[] otherData = ((Puzzle) other).getData();
+            
+            //If sizes don't match, they're not equal.
+            if(otherData.length != this.data.length)
+                return false;
 
             //Loop through the data.
-            for(int i = 0; i < data.length && i < otherData.length; i++){
+            for(int i = 0; i < data.length; i++){
                 
                 //If a mismatch is found, they are not equal.
                 if(data[i] != otherData[i])
@@ -412,6 +435,8 @@ public class Puzzle {
         //Create a string builder for beter String creation.
         StringBuilder str = new StringBuilder(data.length * 4);
 
+        str.append(spaceLoc + "\n");
+
         //Loop through the data
         for(int i = 1; i <= data.length; i++){
 
@@ -432,6 +457,59 @@ public class Puzzle {
         }
 
         return str.toString();
+    }
+
+    /**
+     * Overrides the hashcode so that it is equivalent to the array of data.
+     * This is helpful for comparing this object in a HashMap.
+     */
+    @Override
+    public int hashCode(){
+
+        //Add all the numbers from the data to a String.
+        StringBuilder builder = new StringBuilder(data.length);
+        for(int i : data){
+            builder.append(i);
+        }
+
+        return Integer.parseInt(builder.toString());
+    }
+
+    /**
+     * Generates a random shuffle for a puzzle, then checks that is valid.
+     * @return data containing a valid random shuffle.
+     */
+    private int[] randomShuffle(){
+
+        //Calculate the size once so you only have to multiply once.
+        int size = sideLength * sideLength;
+
+        //Create an ArrayList and an array.
+        ArrayList<Integer> arr = new ArrayList<>(size);
+        int[] temp = new int[size];
+
+        //Add all the numbers from 0 to size to the ArrayList.
+        for(int i = 0; i < size; i++){
+            arr.add(i);
+        }
+
+        do{
+            //Shuffle the ArrayList
+            Collections.shuffle(arr);
+
+            //Add all the numbers from the ArrayList to the array
+            for(int i = 0; i < size; i++){
+                temp[i] = arr.get(i);
+
+                //Find the location of the empty number
+                if(temp[i] == 0)
+                    this.spaceLoc = i;
+            }
+
+            //Keep repeating while the numbers are not valid.
+        }while(!this.checkParity(temp));
+
+        return temp;
     }
 
 }

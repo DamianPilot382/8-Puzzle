@@ -11,54 +11,35 @@
  * Instructor: Dominick A. Atanasio
  *
  */
-
 public class Main{
 
     public static void main(String[] args){
-        testText();
+        testSearch();
     }
 
     public static void testSearch(){
-        //Puzzle puzzle = new Puzzle("1 2 3 4 0 5 6 7 8");
-        Puzzle puzzle = new Puzzle("6 8 2 5 4 3 1 7 0");
 
-        Heuristic heuristic = Heuristic.HAMMING;
+        Puzzle puzzle = new Puzzle(3);
 
-        System.out.println(puzzle);
+        Heuristic heuristic = Heuristic.MANHATTAN;
 
         Step[] steps = Util.search(puzzle, true, heuristic);
 
-        for(Step step : steps){
-            System.out.println(step);
+        if(steps == null){
+            System.out.println("No solution found.");
+            System.exit(0);
         }
 
-    }
-
-    public static void testText(){
-        //Puzzle puzzle = new Puzzle("1 2 3 4 0 5 6 7 8");
-
-        Puzzle puzzle = new Puzzle("6 8 2 5 4 3 1 7 0");
-
-        Heuristic heuristic = Heuristic.HAMMING;
-
-        int count = 3;
         Puzzle next = puzzle;
 
-        
+        for(Step i : steps){
+            System.out.println(i);
+            System.out.println(next);
+            next = next.move(i);
+        }
 
-        // while(count-- > 0){
+        System.out.println(next);
 
-        //     System.out.println(next.getEstimatedCost(heuristic));
-
-        //     System.out.println(next);
-        //     Step[] arr = next.getPossibleSteps();
-
-        //     for(Step i : arr){
-        //         System.out.println(i);
-        //         System.out.println(next.move(i));
-        //         next = next.move(i);
-        //     }
-        // }
     }
 
 }

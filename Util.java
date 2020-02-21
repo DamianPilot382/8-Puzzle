@@ -15,61 +15,92 @@ import java.util.*;
 
 public class Util{
 
-    public static Step[] search(Puzzle puzzle, boolean isTree, Heuristic heur){
+    /**
+     * Search algorithm to look for the solution to a puzzle.
+     * This algorithm implements A* searching for both graph and tree search.
+     * @param puzzle Puzzle to be searched.
+     * @param useExplored Set to true if using an explored set (graph search), false otherwise (tree search).
+     * @param heur heuristic to be used
+     * @return Steps needed to solve the puzzle. Will return null if no solution found.
+     */
+    public static Step[] search(Puzzle puzzle, boolean useExplored, Heuristic heur){
 
-        PriorityQueue<Puzzle> frontier = new PriorityQueue<>
-        (new Comparator<Puzzle>() {
-            public int compare(Puzzle a, Puzzle b){
-                System.out.println("A: " + a.getEstimatedCost(heur));
-                System.out.println(a);
+        //Used to order which puzzle solution to explore next.
+        PriorityQueue<Puzzle> frontier = new PriorityQueue<>(new PuzzleComparator(heur));
 
-                System.out.println("B: " + b.getEstimatedCost(heur));
-                System.out.println(b);
+        //Add the first puzzle to the frontier.
+        frontier.offer(puzzle);
 
-                return a.getEstimatedCost(heur) - b.getEstimatedCost(heur);
-            }
-        });
-
-        frontier.add(puzzle);
-
+        //Initialize the explored set
         HashSet<Puzzle> explored = new HashSet<>();
 
-        int count = 1000;
-
-        while(count-- > 0){
+        while(true){
             
+            //If the frontier is empty, a solution wasn't found.
+            //This shouldn't happen if the puzzle is a valid one.
             if(frontier.isEmpty()) return null; //FAILURE
 
+            //Get the next puzzle.
             Puzzle node = frontier.poll();
 
+            //If this puzzle is the goal state, return the steps taken.
             if(node.checkGoalState())
                 return node.getSteps(); //SOLUTION
 
-            explored.add(node);
 
+            //Add the puzzle to the explored set if using graph search.
+            if(useExplored)
+                explored.add(node);
+
+            //Get the possible steps for this node.
             Step[] steps = node.getPossibleSteps();
 
+            //Loop through every possible state
             for(Step step : steps){
 
+                //Get a new puzzle with this move
                 Puzzle child = node.move(step);
 
-
-                //System.out.println(count);
-
-                //System.out.println(child);
-
-                if(!(explored.contains(child)))
+                //Add this puzzle to the frontier if not using the explored set OR
+                //Or if using the explored, add it to the frontier if it isn't in the explored set.
+                if(!useExplored || (useExplored && !(explored.contains(child)))){
                     frontier.add(child);
-
-                //TODO
-                //else if child is in frontier with higher cost
-                    //replace that frontier node with child
+                }
 
             }
 
         }
 
-        return null;
+    }
 
+}
+
+/**
+ * PuzzleComparator is used to compare puzzles for the PriorityQueue.
+ */
+class PuzzleComparator implements Comparator<Puzzle> {
+
+
+    //Heuristic used to calculate the estimated cost.
+    Heuristic heuristic;
+
+    /**
+     * Creates a new puzzle comparator.
+     * @param heuristic The heuristic to use.
+     */
+    public PuzzleComparator(Heuristic heuristic){
+        this.heuristic = heuristic;
+    }
+
+    /**
+     * Compares the two puzzles.
+     * @param a first puzzle to compare
+     * @param b second puzzle to compare
+     * 
+     * @return positive number if a has a higher estimated cost. Negative otherwise. Zero if equal.
+     */
+    @Override
+    public int compare(Puzzle a, Puzzle b){
+            return a.getEstimatedCost(heuristic) - b.getEstimatedCost(heuristic);
     }
 }

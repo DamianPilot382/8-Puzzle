@@ -11,7 +11,6 @@
  * Instructor: Dominick A. Atanasio
  *
  */
-
 public enum Step {
     UP, DOWN, LEFT, RIGHT;
 }
