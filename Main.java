@@ -14,7 +14,9 @@
 public class Main{
 
     public static void main(String[] args){
-        testSearch();
+        while(true){
+            testSearch();
+        }
     }
 
     public static void testSearch(){
@@ -23,12 +25,22 @@ public class Main{
 
         Heuristic heuristic = Heuristic.MANHATTAN;
 
-        Step[] steps = Util.search(puzzle, true, heuristic);
+        System.out.println(puzzle);
 
-        if(steps == null){
+        Object[] searchReturn = Search.search(puzzle, true, heuristic);
+
+        Step[] steps = (Step[]) searchReturn[0];
+
+        
+        if(steps == null) {
             System.out.println("No solution found.");
             System.exit(0);
         }
+
+        System.out.println("Count: " + (int) searchReturn[1]);
+        System.out.println("Cost: " + steps.length);
+
+
 
         Puzzle next = puzzle;
 

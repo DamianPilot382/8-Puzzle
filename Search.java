@@ -13,7 +13,7 @@
  */
 import java.util.*;
 
-public class Util{
+public class Search {
 
     /**
      * Search algorithm to look for the solution to a puzzle.
@@ -23,7 +23,7 @@ public class Util{
      * @param heur heuristic to be used
      * @return Steps needed to solve the puzzle. Will return null if no solution found.
      */
-    public static Step[] search(Puzzle puzzle, boolean useExplored, Heuristic heur){
+    public static Object[] search(Puzzle puzzle, boolean useExplored, Heuristic heur){
 
         //Used to order which puzzle solution to explore next.
         PriorityQueue<Puzzle> frontier = new PriorityQueue<>(new PuzzleComparator(heur));
@@ -34,18 +34,22 @@ public class Util{
         //Initialize the explored set
         HashSet<Puzzle> explored = new HashSet<>();
 
+        int nodeCount = 1;
+
         while(true){
             
             //If the frontier is empty, a solution wasn't found.
             //This shouldn't happen if the puzzle is a valid one.
-            if(frontier.isEmpty()) return null; //FAILURE
-
+            if(frontier.isEmpty())
+                return null; //FAILURE
+            
             //Get the next puzzle.
             Puzzle node = frontier.poll();
+            nodeCount++;
 
             //If this puzzle is the goal state, return the steps taken.
             if(node.checkGoalState())
-                return node.getSteps(); //SOLUTION
+                return new Object[]{node.getSteps(), nodeCount}; //SOLUTION
 
 
             //Add the puzzle to the explored set if using graph search.
@@ -65,6 +69,7 @@ public class Util{
                 //Or if using the explored, add it to the frontier if it isn't in the explored set.
                 if(!useExplored || (useExplored && !(explored.contains(child)))){
                     frontier.add(child);
+
                 }
 
             }
