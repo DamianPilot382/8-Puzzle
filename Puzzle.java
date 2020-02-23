@@ -40,7 +40,7 @@ public class Puzzle {
         data = insertData(str);
 
         //If the numbers are not valid, throw an exception.
-        if(!checkNumbers() && !checkParity(data))
+        if(!checkNumbers() || !checkParity(data))
             throw new IllegalArgumentException();
 
         this.stepsFromOriginal = new LinkedList<>();
@@ -85,7 +85,7 @@ public class Puzzle {
                 //If the number currently added is 0, set the location
                 //For the empty number.
                 if(arr[i] == 0)
-                    this.spaceLoc = (int) i;
+                    this.spaceLoc = i;
 
             }catch(NumberFormatException e){
                 //If the number fails to convert, throw an exception.

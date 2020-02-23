@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 /**
  * @author Damian Ugalde
  * @date 2020-02-23
@@ -14,10 +16,23 @@
 public class Main{
 
     public static void main(String[] args){
-        while(true){
-            testSearch();
+        runTests();
+    }
+
+    public static void runTests(){
+        try{
+            FileExport export = new FileExport("results2.csv", 3);
+
+            System.out.println("Running tests...");
+            export.runTests();
+            System.out.println("Completed");
+
+
+        }catch(IOException e){
+            System.out.println("Something went wrong when writing the file.");
         }
     }
+
 
     public static void testSearch(){
 
@@ -27,7 +42,7 @@ public class Main{
 
         System.out.println(puzzle);
 
-        Object[] searchReturn = Search.search(puzzle, true, heuristic);
+        Object[] searchReturn = Search.search(puzzle, false, heuristic);
 
         Step[] steps = (Step[]) searchReturn[0];
 
