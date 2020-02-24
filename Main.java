@@ -21,7 +21,7 @@ public class Main{
 
     public static void runTests(){
         try{
-            FileExport export = new FileExport("results2.csv", 3);
+            FileExport export = new FileExport("ans.csv");
 
             System.out.println("Running tests...");
             export.runTests();
@@ -36,7 +36,7 @@ public class Main{
 
     public static void testSearch(){
 
-        Puzzle puzzle = new Puzzle(3);
+        Puzzle puzzle = new Puzzle();
 
         Heuristic heuristic = Heuristic.MANHATTAN;
 

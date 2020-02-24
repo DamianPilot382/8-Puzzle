@@ -15,18 +15,15 @@ import java.util.*;
 
 public class Puzzle {
 
-    private int[] data;
-    private int sideLength;
-    private int spaceLoc;
+    private byte[] data;
+    private byte spaceLoc;
     private LinkedList<Step> stepsFromOriginal;
-    private int estimatedCost = -1;
+    private byte estimatedCost = -1;
 
     /**
      * Creates a puzzle with random numbers from a specified size.
-     * @param sideLength Length of one side of the n x n puzzle.
      */
-    public Puzzle(int sideLength){
-        this.sideLength = sideLength;
+    public Puzzle(){
         this.stepsFromOriginal = new LinkedList<Step>();
         data = randomShuffle();
     }
@@ -50,14 +47,27 @@ public class Puzzle {
      * Creates a puzzle without checking for errors.
      * Good for creating a puzzle from a previous puzzle and for performance.
      * @param data number information for the puzzle.
-     * @param sideLength Length of the sides of the n x n square.
      * @param steps Steps taken from original to get to this point.
      */
-    public Puzzle(int[] data, int sideLen, int spaceLoc, List<Step> steps){
+    public Puzzle(byte[] data, byte spaceLoc, List<Step> steps){
         this.data = data;
-        this.sideLength = sideLen;
         this.stepsFromOriginal = (LinkedList<Step>) steps;
         this.spaceLoc = spaceLoc;
+    }
+
+    /**
+     * Creates a puzzle without checking for errors.
+     * Good for creating a puzzle from a previous puzzle and for performance.
+     * @param data number information for the puzzle.
+     * @param steps Steps taken from original to get to this point.
+     */
+    public Puzzle(byte[] data, byte spaceLoc){
+        this.data = data;
+        this.spaceLoc = spaceLoc;
+
+        if(!checkNumbers() || !checkParity(data))
+            throw new IllegalArgumentException();
+        this.stepsFromOriginal = new LinkedList<>();
     }
 
     /**
@@ -66,7 +76,7 @@ public class Puzzle {
      * @return int array with the data.
      * @throws IllegalArgumentException if the String isn't valid.
      */
-    private int[] insertData(String str) throws IllegalArgumentException {
+    private byte[] insertData(String str) throws IllegalArgumentException {
 
         //Get rid of whitespace and replace with underscores.
         str = str.trim().replaceAll("\\s+", "_");
@@ -75,12 +85,12 @@ public class Puzzle {
         String[] temp = str.split("_");
 
         //Create a temp array.
-        int[] arr = new int[temp.length];
+        byte[] arr = new byte[9];
         
-        for(int i = 0; i < arr.length; i++){
+        for(byte i = 0; i < arr.length; i++){
             try{
                 //Try to convert the string to a number.
-                arr[i] = Integer.valueOf(temp[i]);
+                arr[i] = Byte.valueOf(temp[i]);
 
                 //If the number currently added is 0, set the location
                 //For the empty number.
@@ -108,7 +118,7 @@ public class Puzzle {
         BitSet set = new BitSet();
 
         //Loop through all the numbers in the array
-        for(int i : data){
+        for(byte i : data){
 
             //If the number is already in the bitset, it is a duplicate
             //and reject it.
@@ -119,58 +129,29 @@ public class Puzzle {
         }
 
         //Loop through the bitset
-        for(int i = 0; i < data.length; i++){
+        for(byte i = 0; i < data.length; i++){
             //If a number is missing from the bitset, not all continuous
             //numbers are in the array, so reject.
             if(!set.get(i))
                 return false;
         }
 
-        //Get the length of the side
-        this.sideLength = perfectSquare(data.length);
-        
-        //If the length of the side is not a perfect square, reject it.
-        //Otherwise, accept the data.
-        return sideLength != -1;
-    }
-
-    /**
-     * Gets the integer root of num such that i * i = num.
-     * @param num number to find the root for.
-     * @return root of num. -1 if num is not a perfect square.
-     */
-    private int perfectSquare(int num){
-
-        //if the number we are multiplying is greater than the
-        //number / 2, then it is invalid.
-        int end = (int)(num / 2);
-
-
-        for(int i = 1; i < end; i++){
-            //Multiply this number and check if it is the num provided.
-            int square = i*i;
-            if(square == num)
-                //If it is, return it.
-                return i;
-        }
-
-        //An integer root couldn't be found. Return -1 for error.
-        return -1;
+        return true;
     }
 
     /**
      * Checks if the given data has an even number of inversions.
      * @return True if even inversions, false otherwise.
      */
-    private boolean checkParity(int[] arr){
+    private boolean checkParity(byte[] arr){
 
         //Boolean flipper for inversion. If the boolean is false,
         //then there is an unequal amount of inversions.
         boolean inverted = true;
 
         //Loop through the array
-        for(int i = 0; i < arr.length; i++){
-            for(int j = i + 1; j < arr.length; j++){
+        for(byte i = 0; i < arr.length; i++){
+            for(byte j = (byte) (i + 1); j < arr.length; j++){
 
                 if(arr[i] == 0 || arr[j] == 0)
                     continue;
@@ -195,19 +176,19 @@ public class Puzzle {
         ArrayList<Step> arr = new ArrayList<>(4);
 
         //Get the row and col of the empty num.
-        int row = spaceLoc / sideLength;
-        int col = spaceLoc % sideLength;
+        byte row = (byte)(spaceLoc / 3);
+        byte col = (byte)(spaceLoc % 3);
 
         //ROW
         if(row > 0)
             arr.add(Step.UP);
-        if(row + 1 < sideLength)
+        if(row + 1 < 3)
             arr.add(Step.DOWN);
         
         //COL
         if(col > 0)
             arr.add(Step.LEFT);
-        if(col + 1 < sideLength)
+        if(col + 1 < 3)
             arr.add(Step.RIGHT);
 
         return arr.toArray(new Step[arr.size()]);
@@ -225,22 +206,22 @@ public class Puzzle {
     public Puzzle move(Step step){
 
         //Copy this puzzle data to a new array for the new puzzle
-        int[] temp = Arrays.copyOf(data, data.length);
-        int newSpaceLoc = 0;
+        byte[] temp = Arrays.copyOf(data, data.length);
+        byte newSpaceLoc = 0;
 
         //Based on the movement taken, update the new puzzle data.
         switch(step){
             case UP:
-                newSpaceLoc = spaceLoc - sideLength;
+                newSpaceLoc = (byte) (spaceLoc - 3);
                 break;
             case DOWN:
-                newSpaceLoc = spaceLoc + sideLength;
+                newSpaceLoc = (byte) (spaceLoc + 3);
                 break;
             case LEFT:
-                newSpaceLoc = spaceLoc - 1;
+                newSpaceLoc = (byte) (spaceLoc - 1);
                 break;
             case RIGHT:
-                newSpaceLoc = spaceLoc + 1;
+                newSpaceLoc = (byte) (spaceLoc + 1);
                 break;
         };
 
@@ -253,7 +234,7 @@ public class Puzzle {
         newStep.add(step);
 
         //Create and return the new puzzle object.
-        return new Puzzle(temp, sideLength, newSpaceLoc, newStep);
+        return new Puzzle(temp, newSpaceLoc, newStep);
     }
 
     /**
@@ -262,8 +243,8 @@ public class Puzzle {
      * @param a first index to have the data swapped.
      * @param b seocnd index to have the data swapped.
      */
-    private void swap(int[] arr, int a, int b){
-        int temp = arr[a];
+    private void swap(byte[] arr, byte a, byte b){
+        byte temp = arr[a];
         arr[a] = arr[b];
         arr[b] = temp;
     }
@@ -274,7 +255,7 @@ public class Puzzle {
      */
     public boolean checkGoalState(){
 
-        for(int i = 0; i < data.length; i++){
+        for(byte i = 0; i < data.length; i++){
 
             //If a number is not in the right order, this is not the goal state.
             if(data[i] != i)
@@ -290,11 +271,11 @@ public class Puzzle {
      * position needed for a solution, excluding the empty number.
      * @return Hamming distance for this puzzle configuration.
      */
-    public int getHammingDistance(){
+    public byte getHammingDistance(){
 
-        int count = 0;
+        byte count = 0;
 
-        for(int i = 0; i < data.length; i++){
+        for(byte i = 0; i < data.length; i++){
 
             //If the number is 0, ignore.
             if(data[i] == 0)
@@ -313,10 +294,10 @@ public class Puzzle {
      * where it should be for a solution, excluding the empty number.
      * @return Manhattan distance for this puzzle configuration.
      */
-    public int getManhattanDistance(){
-        int count = 0;
+    public byte getManhattanDistance(){
+        byte count = 0;
 
-        for(int i = 0; i < data.length; i++){
+        for(byte i = 0; i < data.length; i++){
 
             //If the number is zero, ignore it.
             if(data[i] == 0)
@@ -326,8 +307,8 @@ public class Puzzle {
             if(data[i] != i){
                 //Calculate the distance to the correct position
                 //and add it to the running total.
-                int delta = Math.abs(i - data[i]);
-                count += delta % sideLength + delta / sideLength;
+                byte delta = (byte) Math.abs(i - data[i]);
+                count += delta % 3 + delta / 3;
             }
         }
 
@@ -343,19 +324,11 @@ public class Puzzle {
     }
 
     /**
-     * Gets the length of one side of the n x n square puzzle.
-     * @return length of one side.
-     */
-    public int getSideLength(){
-        return this.sideLength;
-    }
-
-    /**
      * Gets the heuristic value based on the specified heuristic calculation.
      * @param heuristic Heuristic calculation to be used.
      * @return Heuristic value
      */
-    public int getHeuristic(Heuristic heuristic){
+    public byte getHeuristic(Heuristic heuristic){
         switch(heuristic){
             case HAMMING:
                 return this.getHammingDistance();
@@ -371,15 +344,15 @@ public class Puzzle {
      * get to this puzzle configuration.
      * @return Step count
      */
-    public int getStepCount(){
-        return this.stepsFromOriginal.size();
+    public byte getStepCount(){
+        return (byte) this.stepsFromOriginal.size();
     }
 
     /**
      * Gets the data for this puzzle.
      * @return number data.
      */
-    protected int[] getData(){
+    protected byte[] getData(){
         return this.data;
     }
 
@@ -388,9 +361,9 @@ public class Puzzle {
      * @param heuristic Heuristic to use
      * @return Estimated cost
      */
-    public int getEstimatedCost(Heuristic heuristic){
+    public byte getEstimatedCost(Heuristic heuristic){
         if(estimatedCost < 0)
-            estimatedCost = this.getHeuristic(heuristic) + this.getStepCount();
+            estimatedCost = (byte) (this.getHeuristic(heuristic) + this.getStepCount());
         return estimatedCost;
     }
 
@@ -408,14 +381,14 @@ public class Puzzle {
         if(other instanceof Puzzle){
 
             //Get the data for the other puzzle.
-            int[] otherData = ((Puzzle) other).getData();
+            byte[] otherData = ((Puzzle) other).getData();
             
             //If sizes don't match, they're not equal.
             if(otherData.length != this.data.length)
                 return false;
 
             //Loop through the data.
-            for(int i = 0; i < data.length; i++){
+            for(byte i = 0; i < data.length; i++){
                 
                 //If a mismatch is found, they are not equal.
                 if(data[i] != otherData[i])
@@ -441,7 +414,7 @@ public class Puzzle {
         str.append(spaceLoc + "\n");
 
         //Loop through the data
-        for(int i = 1; i <= data.length; i++){
+        for(byte i = 1; i <= data.length; i++){
 
             //Add a border
             str.append("| ");
@@ -454,7 +427,7 @@ public class Puzzle {
                 str.append(data[i-1] + " | ");
 
             //If the side length is reached, create a new line.
-            if(i % sideLength == 0)
+            if(i % 3 == 0)
                 str.append("\n");
 
         }
@@ -471,7 +444,7 @@ public class Puzzle {
 
         //Add all the numbers from the data to a String.
         StringBuilder builder = new StringBuilder(data.length);
-        for(int i : data){
+        for(byte i : data){
             builder.append(i);
         }
 
@@ -482,17 +455,14 @@ public class Puzzle {
      * Generates a random shuffle for a puzzle, then checks that is valid.
      * @return data containing a valid random shuffle.
      */
-    private int[] randomShuffle(){
-
-        //Calculate the size once so you only have to multiply once.
-        int size = sideLength * sideLength;
+    private byte[] randomShuffle(){
 
         //Create an ArrayList and an array.
-        ArrayList<Integer> arr = new ArrayList<>(size);
-        int[] temp = new int[size];
+        ArrayList<Byte> arr = new ArrayList<>(9);
+        byte[] temp = new byte[9];
 
         //Add all the numbers from 0 to size to the ArrayList.
-        for(int i = 0; i < size; i++){
+        for(byte i = 0; i < 9; i++){
             arr.add(i);
         }
 
@@ -501,7 +471,7 @@ public class Puzzle {
             Collections.shuffle(arr);
 
             //Add all the numbers from the ArrayList to the array
-            for(int i = 0; i < size; i++){
+            for(byte i = 0; i < 9; i++){
                 temp[i] = arr.get(i);
 
                 //Find the location of the empty number

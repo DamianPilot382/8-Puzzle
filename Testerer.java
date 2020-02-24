@@ -1,12 +1,12 @@
 import java.util.Arrays;
 
-public class Tester{
+public class Testerer{
     
     private byte[] puzzle;
     private boolean done;
     private byte spaceLoc;
 
-    public Tester(){
+    public Testerer(){
         puzzle = new byte[9];
         done = false;
         this.spaceLoc = 0;
@@ -15,7 +15,7 @@ public class Tester{
     private boolean checkDuplicates(){
         for(byte i = 0; i < puzzle.length; i++){
             for(byte j = (byte)(i+1); j < puzzle.length; j++){
-                if(puzzle[j] == puzzle[i])
+                if(puzzle[j] == puzzle[i] || puzzle[i] == 9 || puzzle[j] == 9)
                     return false;
                 if(puzzle[i] == 0)
                     this.spaceLoc = i;
@@ -31,17 +31,19 @@ public class Tester{
 
     private void incrementPuzzle(byte n){
 
-        if(puzzle[n] != 9)
-            puzzle[n]++;
-        else{
-            if(n != 0){
-                puzzle[n] = 0;
-                incrementPuzzle((byte)(n-1));
+        while(n > 0){
+            
+            if(puzzle[n] != 9){
+                puzzle[n]++;
+                break;
             }
-            else
-                done = true;
+
+            puzzle[n] = 0;
+            n--;
         }
 
+        if(n == 0)
+            done = true;
     }
 
     public boolean hasNext(){
@@ -67,6 +69,14 @@ public class Tester{
         }
 
         return builder.toString().trim();
+    }
+
+    public static void main(String[] args){
+        Testerer t = new Testerer();
+        while(t.hasNext()){
+            t.getNextPuzzle();
+            System.out.println(t.getStringPuzzle());
+        }
     }
 
 }

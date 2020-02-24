@@ -21,32 +21,34 @@ public class FileExport {
     private FileWriter writer;
     private Tester tester;
 
-    public FileExport(String fileName, int testSize) throws IOException {
+    public FileExport(String fileName) throws IOException {
         this.writer = new FileWriter(fileName);
-        this.tester = new Tester(testSize);
+        this.tester = new Tester();
     }
 
     public void runTests() throws IOException {
 
         this.addHeaders();
 
-        String next = tester.getNextPuzzle();
+        byte[] next = tester.getNextPuzzle();
         
         while(tester.hasNext()){
 
-            try{
-                Puzzle p = new Puzzle(next);
+            System.out.println(tester.getStringPuzzle());
 
-                writer.append(next + ",");
+            try{
+                Puzzle p = new Puzzle(next, tester.getSpaceLoc());
+
+                writer.append(tester.getStringPuzzle() + ",");
                 this.addSearch(p, true, Heuristic.MANHATTAN);
                 
-                writer.append(next + ",");
+                writer.append(tester.getStringPuzzle() + ",");
                 this.addSearch(p, true, Heuristic.MANHATTAN);
 
-                writer.append(next + ",");
+                writer.append(tester.getStringPuzzle() + ",");
                 this.addSearch(p, false, Heuristic.HAMMING);
                 
-                writer.append(next + ",");
+                writer.append(tester.getStringPuzzle() + ",");
                 this.addSearch(p, true, Heuristic.MANHATTAN);
 
                 System.gc();
